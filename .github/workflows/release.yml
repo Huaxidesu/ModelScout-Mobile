@@ -24,38 +24,40 @@ jobs:
 
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 安装 JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '21'
 
       - name: 配置 Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           cache-read-only: false
 
-      - name: 缓存 Android SDK
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.android/build-cache
-            /usr/local/lib/android/sdk
-          key: android-sdk-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
-          restore-keys: android-sdk-${{ runner.os }}-
+      # runner 自带的 Android SDK 已含 platform 35 / build-tools，无需手动下载，
+      # 只需固定一份 platform-tools 与 licenses，避免每次冷启动。
+      - name: 准备 Android SDK
+        run: |
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          sdkmanager --list_installed 2>/dev/null | head -20 || true
 
       - name: 读取版本号（唯一来源 gradle/libs.versions.toml）
         id: version
         run: |
-          VERSION_NAME=$(grep -E '^\s*appVersionName\s*=' gradle/libs.versions.toml | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
-          VERSION_CODE=$(grep -E '^\s*appVersionCode\s*=' gradle/libs.versions.toml | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+          VERSION_NAME=$(grep -E '^[[:space:]]*appVersionName[[:space:]]*=' gradle/libs.versions.toml | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+          VERSION_CODE=$(grep -E '^[[:space:]]*appVersionCode[[:space:]]*=' gradle/libs.versions.toml | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
           echo "name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
           echo "code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
           echo "tag=v$VERSION_NAME" >> "$GITHUB_OUTPUT"
           echo "APK_NAME=ModelScout-Mobile-v${VERSION_NAME}.apk" >> "$GITHUB_OUTPUT"
           echo "检测到版本：$VERSION_NAME ($VERSION_CODE)"
+
+      # 保险：即使仓库里 gradlew 的可执行位丢了也能跑
+      - name: 确保 gradlew 可执行
+        run: chmod +x ./gradlew
 
       - name: 跑单元测试
         run: ./gradlew testDebugUnitTest --no-daemon
@@ -67,10 +69,7 @@ jobs:
         run: |
           mkdir -p release-artifacts
           cp app/build/outputs/apk/debug/app-debug.apk "release-artifacts/${{ steps.version.outputs.APK_NAME }}"
-
-      - name: 生成带版本号的 tag 说明
-        run: |
-          echo "release notes for ${{ steps.version.outputs.tag }}" > /dev/null
+          ls -lh release-artifacts/
 
       - name: 发布到 Releases
         uses: softprops/action-gh-release@v2
