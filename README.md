@@ -12,6 +12,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/Huaxidesu/ModelScout-Desktop"><img src="https://img.shields.io/badge/桌面版-ModelScout-0F766E" alt="桌面版 ModelScout"></a>
   <a href="https://developer.android.com/"><img src="https://img.shields.io/badge/Android-8.0%2B-3DDC84" alt="Android"></a>
   <a href="https://kotlinlang.org/"><img src="https://img.shields.io/badge/Kotlin-2.0-7F52FF" alt="Kotlin"></a>
   <a href="https://developer.android.com/jetpack/compose"><img src="https://img.shields.io/badge/Jetpack-Compose-4285F4" alt="Compose"></a>
@@ -19,6 +20,8 @@
 </p>
 
 ## 项目简介
+
+本项目提供**桌面版**与**手机版**两个版本，功能一致，本仓库为手机版（Android）；桌面版见 [ModelScout Desktop](https://github.com/Huaxidesu/ModelScout-Desktop)。
 
 使用大模型 API 时，不同模型支持的功能和参数限制可能有所不同。例如，部分模型支持图片输入或工具调用，不同模型能够处理的文本长度也存在差异。这些信息通常需要查阅服务商文档，或通过实际请求确认。
 
