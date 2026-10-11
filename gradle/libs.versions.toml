@@ -1,7 +1,7 @@
 [versions]
 # 应用版本：唯一来源。改这里即可，versionName / versionCode / 关于页都跟着走。
-appVersionName = "1.1"
-appVersionCode = "2"
+appVersionName = "2.1"
+appVersionCode = "3"
 
 agp = "8.7.3"
 kotlin = "2.0.21"
