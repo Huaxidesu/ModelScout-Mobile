@@ -37,13 +37,6 @@ jobs:
         with:
           cache-read-only: false
 
-      # runner 自带的 Android SDK 已含 platform 35 / build-tools，无需手动下载，
-      # 只需固定一份 platform-tools 与 licenses，避免每次冷启动。
-      - name: 准备 Android SDK
-        run: |
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-          sdkmanager --list_installed 2>/dev/null | head -20 || true
-
       - name: 读取版本号（唯一来源 gradle/libs.versions.toml）
         id: version
         run: |
