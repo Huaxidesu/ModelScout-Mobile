@@ -7,11 +7,16 @@
 连接 OpenAI 兼容的 API 服务，批量检测模型的工具调用、图片输入、推理能力及 Token 限制，
 并根据检测结果生成 OpenCode、DeepSeekHardness 配置文件。
 
-[![Download](https://img.shields.io/badge/下载-最新版本-14b8a6?style=for-the-badge)](../../releases/latest)
-[![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84)](https://developer.android.com/)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.0-7F52FF)](https://kotlinlang.org/)
-[![Compose](https://img.shields.io/badge/Jetpack-Compose-4285F4)](https://developer.android.com/jetpack/compose)
-[![License](https://img.shields.io/badge/License-PolyForm_Noncommercial_1.0.0-lightgrey.svg)](LICENSE.md)
+<p align="center">
+  <a href="../../releases/latest"><img src="https://img.shields.io/badge/下载-最新版本-14b8a6?style=for-the-badge" alt="下载最新版本"></a>
+</p>
+
+<p align="center">
+  <a href="https://developer.android.com/"><img src="https://img.shields.io/badge/Android-8.0%2B-3DDC84" alt="Android"></a>
+  <a href="https://kotlinlang.org/"><img src="https://img.shields.io/badge/Kotlin-2.0-7F52FF" alt="Kotlin"></a>
+  <a href="https://developer.android.com/jetpack/compose"><img src="https://img.shields.io/badge/Jetpack-Compose-4285F4" alt="Compose"></a>
+  <a href="LICENSE.md"><img src="https://img.shields.io/badge/License-PolyForm_Noncommercial_1.0.0-lightgrey.svg" alt="License"></a>
+</p>
 
 ## 项目简介
 
@@ -27,7 +32,7 @@ ModelScout 会获取 API 服务中的模型列表，批量检测各模型支持�
 - **批量探测**：同时检测多个模型，实时显示进度与日志。
 - **生成配置文件**：选择需要使用的模型，生成对应工具的配置文件，支持复制和保存。
 - **手动调整结果**：对无法自动识别或存在偏差的参数进行修改。
-- **Key 管家**：管理多个平台的 API Key，检测有效性与余额，记录余额变化。
+- **Key 管家**（测试功能）：管理多个平台的 API Key，检测有效性与余额，记录余额变化。
 
 ## 使用方法
 
@@ -103,6 +108,10 @@ API Key 仅保存在运行内存中，不写入本地存储。
 详细说明参见 [探测原理与限制](../../wiki/探测原理与限制)。
 
 ## Key 管家
+
+> **测试功能。** 「Key 管家」处于测试阶段，尚未经过完整测试，功能与行为可能发生变化，应用内标题栏带有 `BETA` 标识。
+>
+> 其中各平台的余额查询按公开接口文档实现，**部分平台尚未使用真实可用的 Key 完整验证**，检测结果仅供参考。
 
 「Key 管家」用于集中管理多个平台的 API Key。
 
