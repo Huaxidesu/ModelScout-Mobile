@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "note": "ModelScout 内置上限字典（首版 20 条）。数值为公开资料常见值，以官方文档为准。",
+  "entries": [
+    { "match": "deepseek-chat", "context": 65536, "output": 8192 },
+    { "match": "deepseek-reasoner", "context": 65536, "output": 8192 },
+    { "match": "deepseek-v3", "context": 65536, "output": 8192 },
+    { "match": "deepseek-v2", "context": 65536, "output": 4096 },
+    { "match": "gpt-4o-mini", "context": 128000, "output": 16384 },
+    { "match": "gpt-4o", "context": 128000, "output": 16384 },
+    { "match": "gpt-4-turbo", "context": 128000, "output": 4096 },
+    { "match": "gpt-3.5-turbo", "context": 16385, "output": 4096 },
+    { "match": "o1-mini", "context": 128000, "output": 65536 },
+    { "match": "o3-mini", "context": 200000, "output": 100000 },
+    { "match": "claude-3-5-sonnet", "context": 200000, "output": 8192 },
+    { "match": "claude-3-7-sonnet", "context": 200000, "output": 64000 },
+    { "match": "qwen-max", "context": 32768, "output": 8192 },
+    { "match": "qwen-plus", "context": 131072, "output": 8192 },
+    { "match": "qwen-turbo", "context": 131072, "output": 8192 },
+    { "match": "qwen3", "context": 131072, "output": 32768 },
+    { "match": "glm-4-plus", "context": 131072, "output": 4096 },
+    { "match": "glm-4-air", "context": 131072, "output": 4096 },
+    { "match": "glm-z1", "context": 131072, "output": 32768 },
+    { "match": "moonshot-v1-128k", "context": 131072, "output": 8192 }
+  ]
+}

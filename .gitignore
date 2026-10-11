@@ -1,0 +1,177 @@
+# ============================================================================
+# ModelScout-Mobile — .gitignore
+# 原则：凡是「本机生成 / 含密钥 / 可重建」的东西一律不入库。
+# ============================================================================
+
+# ---------------------------------------------------------------- 构建产物
+build/
+app/build/
+/app/release/
+out/
+bin/
+*.apk
+*.aab
+*.aar
+*.jar
+# Gradle wrapper 的 jar 必须入库，否则别人 clone 后跑不了 ./gradlew
+!gradle/wrapper/gradle-wrapper.jar
+
+# ---------------------------------------------------------------- Gradle / Kotlin 缓存
+.gradle/
+.kotlin/
+gradle-app.setting
+.gradletasknamecache
+# 含本机 Android SDK 路径，每人不一样
+local.properties
+
+# ---------------------------------------------------------------- 签名与密钥（红线）
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pepk
+keystore.properties
+signing.properties
+secrets.properties
+local.secrets.properties
+.env
+.env.*
+
+# ---------------------------------------------------------------- IDE / 编辑器
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.code-workspace
+*.swp
+*.swo
+*~
+
+# ---------------------------------------------------------------- 原生构建
+.cxx/
+.externalNativeBuild/
+obj/
+*.so
+
+# ---------------------------------------------------------------- 崩溃与日志
+*.log
+*.hprof
+hs_err_pid*.log
+captures/
+build-output.log
+
+# ---------------------------------------------------------------- 操作系统
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# ---------------------------------------------------------------- 本地 AI 工具工作目录
+# 各种 AI 编码助手会在项目里生成自己的私有状态（提示词、会话缓存、索引、规则文件）。
+# 这些都不是项目源码，一律不进仓库。以下按工具名分组，仅便于维护，与是否使用无关。
+
+# opencode
+.opencode/
+.opencode.json
+.opencode.jsonc
+opencode.json
+opencode.jsonc
+
+# WorkBuddy
+.workbuddy-ai/
+
+# Claude Code
+.claude/
+.claude.json
+.claudeignore
+CLAUDE.local.md
+
+# Cursor
+.cursor/
+.cursorrules
+.cursorignore
+.cursorindexingignore
+
+# GitHub Copilot
+.copilot/
+copilot-instructions.local.md
+
+# Windsurf / Codeium
+.windsurf/
+.windsurfrules
+.codeium/
+
+# Cline
+.clinerules/
+.cline/
+
+# Roo Code
+.roo/
+.roorules
+
+# Kilo Code
+.kilocode/
+.kilocoderules
+
+# Aider
+.aider*
+.aider.tags.cache.v*/
+
+# Continue
+.continue/
+.continuerules
+
+# Codex CLI
+.codex/
+.codexignore
+AGENTS.local.md
+
+# Gemini CLI
+.gemini/
+
+# Qwen Code
+.qwen/
+QWEN.local.md
+
+# Trae
+.trae/
+.traerules
+
+# Amazon Q Developer
+.amazonq/
+.amazonqignore
+
+# Tabnine
+.tabnine/
+
+# Augment Code
+.augment/
+
+# Zed
+.zed/
+.zedignore
+
+# Warp
+.warp/
+
+# Sourcegraph Cody
+.cody/
+
+# Devin
+.devin/
+
+# JetBrains AI Assistant
+.aiassistant/
+
+# 通用：本地提示词 / 上下文 / 草稿，因人而异
+.ai/
+.aiignore
+.aicontext/
+.prompt/
+.prompts.local/
+# 文档
+doc/
