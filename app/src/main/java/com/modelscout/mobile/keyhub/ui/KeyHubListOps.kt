@@ -69,4 +69,30 @@ object KeyHubListOps {
 
     fun platformCounts(records: List<KeyRecord>): List<Pair<Platform, Int>> =
         records.groupBy { it.platform }.map { it.key to it.value.size }.sortedBy { it.first.displayName }
+
+    // ---------------------------------------------------------------- 多选（批量编辑）
+
+    /** 勾选 / 取消勾选一个 id。 */
+    fun toggleSelection(selected: Set<String>, id: String): Set<String> =
+        if (id in selected) selected - id else selected + id
+
+    fun selectAll(records: List<KeyRecord>): Set<String> = records.mapTo(HashSet()) { it.id }
+
+    fun isAllSelected(records: List<KeyRecord>, selected: Set<String>): Boolean =
+        records.isNotEmpty() && records.all { it.id in selected }
+
+    /**
+     * 剔除已经不存在的 id（删除 / 清空之后调用），避免出现「幽灵选中」——
+     * 底部写着「已选 3」但列表里只剩 1 张卡。
+     */
+    fun pruneSelection(selected: Set<String>, records: List<KeyRecord>): Set<String> {
+        if (selected.isEmpty()) return selected
+        val alive = records.mapTo(HashSet()) { it.id }
+        val pruned = selected.filterTo(HashSet()) { it in alive }
+        return if (pruned.size == selected.size) selected else pruned
+    }
+
+    /** 一批记录里最常见的平台，用作「批量改平台」的预选值。并列取先出现的；空集合返回 null。 */
+    fun dominantPlatform(records: List<KeyRecord>): Platform? =
+        records.groupingBy { it.platform }.eachCount().maxByOrNull { it.value }?.key
 }

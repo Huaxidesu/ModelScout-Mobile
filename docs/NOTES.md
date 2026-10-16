@@ -263,15 +263,20 @@ class AppSettingsStore(context: Context) {
 
 ### 应用版本号（单一来源）
 
-**唯一来源是 `gradle/libs.versions.toml` 的 `[versions]`**：
+**唯一来源是 `gradle/libs.versions.toml` 的 `[versions]`**，就两个键：
 
 ```toml
-appVersionName = "1.1"
-appVersionCode = "2"
+appVersionName = "…"   # versionName，发布 tag 为 v<该值>
+appVersionCode = "…"   # versionCode，每次发布 +1
 ```
 
+> 这里**故意不抄具体值**。以前抄过一份，结果落后了两个版本（文档写 1.1、实际已到 2.1）。
+> 要看当前版本，直接读 `libs.versions.toml`，或者跑
+> `grep appVersion gradle/libs.versions.toml`。
+
 `app/build.gradle.kts` 读它填 `versionName` / `versionCode`；
-`ui/AppInfo.kt` 通过 `BuildConfig.VERSION_NAME` / `VERSION_CODE` 读同一份值（`buildConfig = true`）。
+`ui/AppInfo.kt` 通过 `BuildConfig.VERSION_NAME` / `VERSION_CODE` 读同一份值（`buildConfig = true`）；
+`.github/workflows/release.yml` 也从同一个文件里 grep 出版本号来打 tag 和命名 APK。
 **任何地方都不要再手写版本字符串。**
 
 真实网关冒烟测试（凭证只从命令行注入，不写进仓库）：

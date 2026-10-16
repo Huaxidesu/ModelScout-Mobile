@@ -74,4 +74,14 @@ object KeyDetector {
         if (head.contains("://")) return null
         return head
     }
+
+    /**
+     * 整批里出现次数最多的平台，用于「手动指定」时的预选值。
+     * 并列时取**先出现**的那个（保持粘贴顺序的直觉）；空集合返回 null。
+     */
+    fun dominantPlatform(keys: List<ExtractedKey>): Platform? =
+        keys.groupingBy { it.platform }
+            .eachCount()
+            .maxByOrNull { it.value }
+            ?.key
 }

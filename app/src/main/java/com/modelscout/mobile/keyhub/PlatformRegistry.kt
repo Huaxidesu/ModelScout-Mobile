@@ -54,7 +54,10 @@ data class Detection(val platform: Platform, val confidence: Confidence) {
  * 平台知识单点（计划书 §4.1）。前缀、鉴权头、端点、余额解析路径全部收在这一个文件里。
  *
  * 决策 3：裸 `sk-` 识别为「OpenAI 兼容（推断）」，**禁止**自动把 Key 发往多个平台试错；
- * DeepSeek / Moonshot / SiliconFlow 都只是裸 `sk-` 的**候选**，必须用户手动指定。
+ * Moonshot / SiliconFlow 都只是裸 `sk-` 的**候选**，必须用户手动指定。
+ *
+ * 决策 13：DeepSeek 的 Key 是 `sk-` + 32 位小写 hex，格式自带辨识度 → 用 pattern 识别，
+ * 并且 **pattern 优先于裸 `sk-` 推断**。详见 [detect]。
  */
 object PlatformRegistry {
 
@@ -85,11 +88,16 @@ object PlatformRegistry {
         ),
         PlatformSpec(
             platform = Platform.DEEPSEEK,
+            // DeepSeek 的 Key 格式固定：`sk-` + 32 位小写十六进制。没有厂商专属前缀，
+            // 但格式本身有辨识度，因此走 pattern 而不是前缀（决策 13）。
+            pattern = Regex("^sk-[0-9a-f]{32}$"),
+            // 格式是「强证据」但不是「厂商自报名」，仍标推断，用户可一键改。
+            confidence = Confidence.INFERRED,
             balanceEndpoint = "https://api.deepseek.com/user/balance",
             balanceAmountPaths = listOf("balance_infos[0].total_balance", "balance_infos[0].balance"),
             balanceCurrencyPaths = listOf("balance_infos[0].currency"),
             defaultCurrency = "CNY",
-            note = "裸 sk- 候选，需用户手动指定平台",
+            note = "sk- + 32 位小写 hex 视为 DeepSeek（推断）；其它裸 sk- 仍是手动候选",
         ),
         PlatformSpec(
             platform = Platform.MOONSHOT,
@@ -164,19 +172,38 @@ object PlatformRegistry {
         specs.flatMap { spec -> spec.prefixes.map { it to spec.platform } }
             .sortedByDescending { it.first.value.length }
 
+    /** 自带厂商标识的前缀（`sk-proj-` / `sk-ant-` / `gsk_` / `AIza` …）。 */
+    private val certainPrefixIndex = prefixIndex.filter { it.first.confidence == Confidence.CERTAIN }
+
+    /** 需要标「推断」的前缀，目前只有裸 `sk-`。 */
+    private val inferredPrefixIndex = prefixIndex.filter { it.first.confidence == Confidence.INFERRED }
+
     fun spec(platform: Platform): PlatformSpec =
         byPlatform[platform] ?: error("PlatformRegistry 缺少 $platform 的登记")
 
-    /** 识别平台。最长前缀优先；其次正则；都不中 → 自定义（推断）。 */
+    /**
+     * 识别平台（决策 13 定顺序，**顺序本身就是规则**）：
+     *
+     * 1. **CERTAIN 前缀**（最长优先）—— 前缀里直接带厂商标识，最可靠；
+     * 2. **格式 pattern** —— 前缀通用但格式有厂商特征（DeepSeek = `sk-` + 32 位小写 hex）。
+     *    必须排在裸 `sk-` 之前，否则 DeepSeek 永远被 OpenAI 抢走；
+     * 3. **INFERRED 前缀** —— 裸 `sk-` 兜底成「OpenAI 兼容（推断）」；
+     * 4. 都不中 → 自定义（推断）。
+     *
+     * 这里只做**纯文本判断**，不发任何请求。拿不准的平台由用户在「手动指定」里定。
+     */
     fun detect(rawKey: String): Detection {
         val key = rawKey.trim()
         if (key.isEmpty()) return Detection(Platform.CUSTOM, Confidence.INFERRED)
 
-        prefixIndex.firstOrNull { key.startsWith(it.first.value) }?.let { (rule, platform) ->
+        certainPrefixIndex.firstOrNull { key.startsWith(it.first.value) }?.let { (rule, platform) ->
             return Detection(platform, rule.confidence)
         }
         specs.firstOrNull { spec -> spec.pattern?.matches(key) == true }?.let { spec ->
             return Detection(spec.platform, spec.confidence)
+        }
+        inferredPrefixIndex.firstOrNull { key.startsWith(it.first.value) }?.let { (rule, platform) ->
+            return Detection(platform, rule.confidence)
         }
         return Detection(Platform.CUSTOM, Confidence.INFERRED)
     }

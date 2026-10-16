@@ -2,9 +2,12 @@ package com.modelscout.mobile.keyhub.checker
 
 import com.modelscout.mobile.keyhub.KeyClassifier
 import com.modelscout.mobile.keyhub.KeyHubHttp
+import com.modelscout.mobile.keyhub.PlatformRegistry
+import com.modelscout.mobile.keyhub.model.Confidence
 import com.modelscout.mobile.keyhub.model.KeyRecord
 import com.modelscout.mobile.keyhub.model.KeyStatus
 import com.modelscout.mobile.keyhub.model.Platform
+import com.modelscout.mobile.keyhub.security.KeyMasker
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -18,8 +21,14 @@ import org.junit.Test
  * R3 真实网关冒烟（默认跳过）。
  *
  * ```
+ * # 单 Key（自定义平台）
  * ./gradlew testDebugUnitTest --tests "*RealKeyHubIT*" -PrealGateway=1 \
  *   -PkeyhubBaseUrl=https://xxx/v1 -PkeyhubApiKey=sk-xxx
+ *
+ * # 批量（同厂家一批 Key，逗号分隔；推荐写进 gitignored 的 local.secrets.properties）
+ * # local.secrets.properties:  realGateway=1
+ * #                            keyhubBatchKeys=sk-a,sk-b,sk-c
+ * ./gradlew testDebugUnitTest --tests "*RealKeyHubIT*"
  * ```
  */
 class RealKeyHubIT {
@@ -121,5 +130,66 @@ class RealKeyHubIT {
         println()
 
         assertEquals(KeyStatus.AVAILABLE, updated.lastStatus)
+    }
+
+    /**
+     * 批量冒烟：一整批同厂家的 Key（走 `local.secrets.properties` 的 `keyhubBatchKeys`，逗号分隔）。
+     *
+     * 验证两件事：
+     * 1. **识别**：每个 Key 都被 [PlatformRegistry.detect] 判成 DeepSeek，而不是被裸 `sk-` 抢成 OpenAI（决策 13）；
+     * 2. **余额端点**：DeepSeek 的 `/user/balance` + 解析路径真的能跑通（GOTCHAS §3 一直缺的端到端验证）。
+     *
+     * 只打印**指纹**，绝不打印明文。
+     */
+    @Test
+    fun `a batch of deepseek keys is detected and checked end to end`() = runBlocking {
+        val raw = System.getProperty("modelscout.keyhubBatchKeys").orEmpty()
+        Assume.assumeTrue("未提供 keyhubBatchKeys", raw.isNotBlank())
+
+        val keys = raw.split(',', '\n', '\r', ';', ' ')
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+
+        val engine = KeyCheckEngine(KeyChecker(KeyHubHttp.create()))
+        val statuses = mutableListOf<KeyStatus>()
+
+        println()
+        println("=".repeat(88))
+        keys.forEach { rawKey ->
+            val detection = PlatformRegistry.detect(rawKey)
+            val updated = engine.checkOne(record(Platform.DEEPSEEK, rawKey))
+            statuses += updated.lastStatus
+            println(
+                "%-16s %-14s -> %-10s 余额=%-14s 指纹=%s".format(
+                    detection.platform.displayName,
+                    if (detection.confidence == Confidence.INFERRED) "（推断）" else "",
+                    updated.lastStatus.label,
+                    updated.displayBalance().display(),
+                    KeyMasker.fingerprint(rawKey),
+                ),
+            )
+        }
+        println("=".repeat(88))
+        println(
+            "共 ${keys.size} 个：" +
+                KeyStatus.entries.joinToString(" · ") { s -> "${s.label} ${statuses.count { it == s }}" },
+        )
+        println()
+
+        // 1. 识别：一个都不能落到 OpenAI
+        keys.forEach { rawKey ->
+            assertEquals(
+                "该 Key 被识别成了 ${PlatformRegistry.detect(rawKey).platform.displayName}",
+                Platform.DEEPSEEK,
+                PlatformRegistry.detect(rawKey).platform,
+            )
+        }
+
+        // 2. 端点 + 解析：至少要有一个 Key 走到明确结论，
+        //    全是 CHECK_FAILED 说明端点或解析路径没跑通（或本机网络/代理有问题）。
+        val definitive = statuses.count {
+            it == KeyStatus.AVAILABLE || it == KeyStatus.INSUFFICIENT || it == KeyStatus.INVALID
+        }
+        assertTrue("整批都没有拿到明确结论（全是查询失败），端点或解析路径可能有问题", definitive > 0)
     }
 }

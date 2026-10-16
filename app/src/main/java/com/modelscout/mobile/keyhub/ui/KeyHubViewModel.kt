@@ -12,8 +12,10 @@ import com.modelscout.mobile.keyhub.KeyHubStore
 import com.modelscout.mobile.keyhub.PlatformRegistry
 import com.modelscout.mobile.keyhub.checker.BatchSummary
 import com.modelscout.mobile.keyhub.checker.KeyHubEvent
+import com.modelscout.mobile.keyhub.detect.ExtractedKey
 import com.modelscout.mobile.keyhub.detect.ExtractionResult
 import com.modelscout.mobile.keyhub.detect.KeyDetector
+import com.modelscout.mobile.keyhub.model.Confidence
 import com.modelscout.mobile.keyhub.model.HistoryPoint
 import com.modelscout.mobile.keyhub.model.KeyRecord
 import com.modelscout.mobile.keyhub.model.KeyStatus
@@ -27,6 +29,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 enum class KeyHubScreen { LIST, DETAIL }
+
+/** 批量入库时的平台来源。 */
+enum class AddMode(val label: String) {
+    /** 逐条按格式自动识别（现状）。 */
+    AUTO("自动识别"),
+
+    /** 整批都用用户选的平台，落库时置 platformOverridden。 */
+    MANUAL("手动指定"),
+}
 
 /** 详情页揭示明文后自动回 mask 的时长。 */
 private const val REVEAL_TIMEOUT_MS = 20_000L
@@ -51,7 +62,19 @@ data class KeyHubUiState(
 
     val addSheetOpen: Boolean = false,
     val addText: String = "",
+    val addMode: AddMode = AddMode.AUTO,
+    /** 手动指定模式下用户显式选过的平台；null 表示用「整批里最常见的平台」预选。 */
+    val addPlatformOverride: Platform? = null,
+    val addCustomBaseUrl: String = "",
+    val addCustomBalanceEndpoint: String = "",
     val settingsSheetOpen: Boolean = false,
+
+    // ---- 批量编辑（多选） ----
+    val selectionMode: Boolean = false,
+    val selectedIds: Set<String> = emptySet(),
+    val batchPlatformDialog: Boolean = false,
+    val batchLabelDialog: Boolean = false,
+    val batchDeleteDialog: Boolean = false,
 
     val revealedIds: Set<String> = emptySet(),
     val message: String? = null,
@@ -64,6 +87,31 @@ data class KeyHubUiState(
     val isEmpty: Boolean get() = records.isEmpty()
 
     val addPreview: ExtractionResult get() = KeyDetector.extractKeys(addText)
+
+    /**
+     * 手动模式下的预选平台：用户显式选过就用它，否则用整批里最常见的平台
+     * （例如整批 16 个 DeepSeek Key → 直接预选 DeepSeek），再兜底「自定义」。
+     */
+    val addManualPlatform: Platform
+        get() = addPlatformOverride
+            ?: KeyDetector.dominantPlatform(addPreview.keys)
+            ?: Platform.CUSTOM
+
+    /** 真正会入库的条目：手动模式整批覆盖成所选平台。 */
+    val addEffectiveKeys: List<ExtractedKey>
+        get() = if (addMode == AddMode.AUTO) {
+            addPreview.keys
+        } else {
+            val platform = addManualPlatform
+            addPreview.keys.map { it.copy(platform = platform, confidence = Confidence.CERTAIN) }
+        }
+
+    /** 当前列表里被选中的记录（按列表顺序，不是点击顺序）。 */
+    val selectedRecords: List<KeyRecord> get() = visible.filter { it.id in selectedIds }
+
+    val selectedCount: Int get() = selectedIds.size
+
+    val allSelected: Boolean get() = KeyHubListOps.isAllSelected(records, selectedIds)
 
     val canRetryFailed: Boolean get() = lastSummary?.failedIds?.isNotEmpty() == true
 }
@@ -82,7 +130,17 @@ class KeyHubViewModel(
 
     init {
         viewModelScope.launch {
-            store.records.collect { list -> _state.update { it.copy(records = list) } }
+            store.records.collect { list ->
+                _state.update {
+                    val pruned = KeyHubListOps.pruneSelection(it.selectedIds, list)
+                    it.copy(
+                        records = list,
+                        selectedIds = pruned,
+                        // 列表空了就顺手退出批量模式，否则底部操作栏会一直挂着一个空壳
+                        selectionMode = it.selectionMode && list.isNotEmpty(),
+                    )
+                }
+            }
         }
         viewModelScope.launch {
             store.history.collect { list -> _state.update { it.copy(history = list) } }
@@ -136,37 +194,163 @@ class KeyHubViewModel(
     fun setSortMode(mode: SortMode) = _state.update { it.copy(sortMode = mode) }
 
     fun setStatusFilter(status: KeyStatus?) = _state.update {
-        it.copy(statusFilter = if (it.statusFilter == status) null else status)
+        it.copy(statusFilter = if (it.statusFilter == status) null else status).prunedSelection()
     }
 
     fun setPlatformFilter(platform: Platform?) = _state.update {
-        it.copy(platformFilter = if (it.platformFilter == platform) null else platform)
+        it.copy(platformFilter = if (it.platformFilter == platform) null else platform).prunedSelection()
     }
+
+    /**
+     * 改筛选条件后把选中项收敛到新的可见集合。
+     * 否则「筛到可用 → 全选 → 换成余额不足」会让批量操作作用在一批看不见的 Key 上。
+     */
+    private fun KeyHubUiState.prunedSelection(): KeyHubUiState =
+        copy(selectedIds = KeyHubListOps.pruneSelection(selectedIds, visible))
 
     // ------------------------------------------------------------ 添加
 
-    fun openAddSheet() = _state.update { it.copy(addSheetOpen = true, addText = "") }
+    fun openAddSheet() = _state.update {
+        it.copy(
+            addSheetOpen = true,
+            addText = "",
+            // 模式保持上次的选择（连着贴几批同一家的 Key 时不用重复点），
+            // 但平台预选重置，让它跟着本批内容重新算。
+            addPlatformOverride = null,
+            addCustomBaseUrl = "",
+            addCustomBalanceEndpoint = "",
+        )
+    }
 
     fun closeAddSheet() = _state.update { it.copy(addSheetOpen = false) }
 
     fun onAddTextChange(text: String) = _state.update { it.copy(addText = text) }
 
+    fun setAddMode(mode: AddMode) = _state.update { it.copy(addMode = mode) }
+
+    fun setAddPlatform(platform: Platform) = _state.update { it.copy(addPlatformOverride = platform) }
+
+    fun setAddCustomBaseUrl(value: String) = _state.update { it.copy(addCustomBaseUrl = value) }
+
+    fun setAddCustomBalanceEndpoint(value: String) =
+        _state.update { it.copy(addCustomBalanceEndpoint = value) }
+
     fun confirmAdd() {
-        val preview = _state.value.addPreview
-        if (preview.keys.isEmpty()) {
+        val current = _state.value
+        val keys = current.addEffectiveKeys
+        if (keys.isEmpty()) {
             _state.update { it.copy(message = "没有识别到可用的 Key") }
             return
         }
-        val result = store.add(preview.keys)
+        val manual = current.addMode == AddMode.MANUAL
+        val result = store.add(
+            extracted = keys,
+            overridden = manual,
+            customBaseUrl = current.addCustomBaseUrl.takeIf { manual },
+            customBalanceEndpoint = current.addCustomBalanceEndpoint.takeIf { manual },
+        )
         _state.update {
             it.copy(
                 addSheetOpen = false,
                 addText = "",
                 message = buildString {
                     append("已添加 ${result.added} 个")
-                    if (preview.duplicatesSkipped > 0) append("，已存在跳过 ${preview.duplicatesSkipped} 个")
+                    if (manual) append("（手动指定：${current.addManualPlatform.displayName}）")
+                    if (current.addPreview.duplicatesSkipped > 0) {
+                        append("，本次粘贴内重复跳过 ${current.addPreview.duplicatesSkipped} 个")
+                    }
                     if (result.skippedExisting > 0) append("，列表已存在跳过 ${result.skippedExisting} 个")
                 },
+            )
+        }
+    }
+
+    // ------------------------------------------------------------ 批量编辑（多选）
+
+    fun toggleSelectionMode() = _state.update {
+        if (it.selectionMode) {
+            it.copy(selectionMode = false, selectedIds = emptySet())
+        } else {
+            it.copy(selectionMode = true)
+        }
+    }
+
+    fun toggleSelect(id: String) = _state.update {
+        it.copy(selectedIds = KeyHubListOps.toggleSelection(it.selectedIds, id))
+    }
+
+    /** 全选 / 取消全选（作用于当前**可见**的列表，尊重筛选条件）。 */
+    fun toggleSelectAll() = _state.update {
+        if (KeyHubListOps.isAllSelected(it.visible, it.selectedIds)) {
+            it.copy(selectedIds = emptySet())
+        } else {
+            it.copy(selectedIds = KeyHubListOps.selectAll(it.visible))
+        }
+    }
+
+    fun clearSelection() = _state.update { it.copy(selectedIds = emptySet()) }
+
+    fun openBatchPlatform() = openBatchDialog { it.copy(batchPlatformDialog = true) }
+
+    fun openBatchLabel() = openBatchDialog { it.copy(batchLabelDialog = true) }
+
+    fun openBatchDelete() = openBatchDialog { it.copy(batchDeleteDialog = true) }
+
+    fun closeBatchDialogs() = _state.update {
+        it.copy(batchPlatformDialog = false, batchLabelDialog = false, batchDeleteDialog = false)
+    }
+
+    /** 三个批量弹窗共用同一道「先看有没有选中」的闸门。 */
+    private fun openBatchDialog(transform: (KeyHubUiState) -> KeyHubUiState) {
+        val current = _state.value
+        if (current.selectedIds.isEmpty()) {
+            _state.update { it.copy(message = "请先勾选要处理的 Key") }
+            return
+        }
+        _state.update(transform)
+    }
+
+    fun applyBatchPlatform(
+        platform: Platform,
+        customBaseUrl: String?,
+        customBalanceEndpoint: String?,
+    ) {
+        val ids = _state.value.selectedIds
+        val changed = store.updatePlatformBulk(ids, platform, customBaseUrl, customBalanceEndpoint)
+        _state.update {
+            it.copy(
+                batchPlatformDialog = false,
+                message = "已把 $changed 个 Key 改为 ${platform.displayName}，重新检测将走新端点",
+            )
+        }
+    }
+
+    fun applyBatchLabel(label: String) {
+        val ids = _state.value.selectedIds
+        val trimmed = label.trim()
+        val changed = store.updateLabelBulk(ids, trimmed.ifBlank { null })
+        _state.update {
+            it.copy(
+                batchLabelDialog = false,
+                message = if (trimmed.isBlank()) {
+                    "已清除 $changed 个 Key 的标签"
+                } else {
+                    "已把 $changed 个 Key 的标签改为「$trimmed」"
+                },
+            )
+        }
+    }
+
+    fun confirmBatchDelete() {
+        val ids = _state.value.selectedIds
+        val removed = store.removeBulk(ids)
+        _state.update {
+            it.copy(
+                batchDeleteDialog = false,
+                selectedIds = emptySet(),
+                // 列表被删空时，records 的收集器会把 selectionMode 关掉
+                selectionMode = true,
+                message = "已删除 $removed 个 Key",
             )
         }
     }
@@ -220,13 +404,27 @@ class KeyHubViewModel(
     // ------------------------------------------------------------ 检测
 
     fun checkAll(onlyFailed: Boolean = false) {
-        if (_state.value.checking) return
         val targets = if (onlyFailed) {
             val ids = _state.value.lastSummary?.failedIds.orEmpty()
             _state.value.records.filter { it.id in ids }
         } else {
             _state.value.records
         }
+        startCheck(targets)
+    }
+
+    /** 只测勾选的那些（批量编辑里的「检测选中」）。 */
+    fun checkSelected() {
+        val ids = _state.value.selectedIds
+        if (ids.isEmpty()) {
+            _state.update { it.copy(message = "请先勾选要检测的 Key") }
+            return
+        }
+        startCheck(_state.value.records.filter { it.id in ids })
+    }
+
+    private fun startCheck(targets: List<KeyRecord>) {
+        if (_state.value.checking) return
         if (targets.isEmpty()) {
             _state.update { it.copy(message = "没有需要检测的 Key") }
             return

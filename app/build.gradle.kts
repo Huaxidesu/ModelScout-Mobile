@@ -76,6 +76,8 @@ tasks.withType<Test>().configureEach {
     systemProperty("modelscout.apiKey", secret("realApiKey"))
     systemProperty("modelscout.keyhubBaseUrl", secret("keyhubBaseUrl"))
     systemProperty("modelscout.keyhubApiKey", secret("keyhubApiKey"))
+    // 批量冒烟：逗号分隔的一批 Key（同样只走 gitignored 的 local.secrets.properties）
+    systemProperty("modelscout.keyhubBatchKeys", secret("keyhubBatchKeys"))
 }
 
 dependencies {

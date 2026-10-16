@@ -69,7 +69,13 @@ class KeyHubStore(
 
     // ------------------------------------------------------------ 增删改
 
-    fun add(extracted: List<ExtractedKey>): AddResult {
+    fun add(
+        extracted: List<ExtractedKey>,
+        /** 「手动指定平台」模式入库时为 true：重测不会被自动识别覆盖。 */
+        overridden: Boolean = false,
+        customBaseUrl: String? = null,
+        customBalanceEndpoint: String? = null,
+    ): AddResult {
         val existing = _records.value.map { it.rawKey }.toHashSet()
         val fresh = mutableListOf<KeyRecord>()
         var skippedExisting = 0
@@ -84,10 +90,12 @@ class KeyHubStore(
                 rawKey = item.rawKey,
                 label = item.label,
                 platform = item.platform,
-                platformOverridden = false,
+                platformOverridden = overridden,
                 addedAt = clock(),
                 // 五态里的「⏳ 待检测」只是初始态，不算检测结论
                 lastStatus = KeyStatus.PENDING,
+                customBaseUrl = customBaseUrl?.takeIf { v -> v.isNotBlank() },
+                customBalanceEndpoint = customBalanceEndpoint?.takeIf { v -> v.isNotBlank() },
             )
         }
 
@@ -114,26 +122,77 @@ class KeyHubStore(
         customBaseUrl: String? = null,
         customBalanceEndpoint: String? = null,
     ) {
-        mutate(id) {
-            it.copy(
-                platform = platform,
-                platformOverridden = true,
-                customBaseUrl = customBaseUrl?.takeIf { v -> v.isNotBlank() },
-                customBalanceEndpoint = customBalanceEndpoint?.takeIf { v -> v.isNotBlank() },
-                // 换平台后旧结论失效
-                lastStatus = KeyStatus.PENDING,
-                lastBalance = null,
-                lastCurrency = null,
-                lastUnlimited = false,
-                lastCheckedAt = null,
-            )
-        }
+        mutate(id) { it.withPlatform(platform, customBaseUrl, customBalanceEndpoint) }
     }
 
     private fun mutate(id: String, transform: (KeyRecord) -> KeyRecord) {
         _records.update { list -> list.map { if (it.id == id) transform(it) else it } }
         persistKeys()
     }
+
+    // ------------------------------------------------------------ 批量编辑
+
+    /**
+     * 批量改平台。返回真正被改动的条数（[ids] 里不存在的会被忽略）。
+     * 与单条版本同样置 `platformOverridden` 并作废旧结论。
+     */
+    fun updatePlatformBulk(
+        ids: Collection<String>,
+        platform: Platform,
+        customBaseUrl: String? = null,
+        customBalanceEndpoint: String? = null,
+    ): Int = mutateBulk(ids) { it.withPlatform(platform, customBaseUrl, customBalanceEndpoint) }
+
+    /** 批量改标签。[label] 为 null / 空白表示清除标签。 */
+    fun updateLabelBulk(ids: Collection<String>, label: String?): Int =
+        mutateBulk(ids) { it.copy(label = label?.takeIf { v -> v.isNotBlank() }) }
+
+    /** 批量删除。返回删掉的条数。 */
+    fun removeBulk(ids: Collection<String>): Int {
+        val targets = ids.toHashSet()
+        if (targets.isEmpty()) return 0
+        val before = _records.value.size
+        _records.update { list -> list.filterNot { it.id in targets } }
+        val removed = before - _records.value.size
+        if (removed > 0) persistKeys()
+        return removed
+    }
+
+    /** 批量变换：一次 update + 一次落盘，避免 N 次写文件。 */
+    private fun mutateBulk(ids: Collection<String>, transform: (KeyRecord) -> KeyRecord): Int {
+        val targets = ids.toHashSet()
+        if (targets.isEmpty()) return 0
+        var changed = 0
+        _records.update { list ->
+            list.map { record ->
+                if (record.id in targets) {
+                    changed++
+                    transform(record)
+                } else {
+                    record
+                }
+            }
+        }
+        if (changed > 0) persistKeys()
+        return changed
+    }
+
+    /** 改平台后的统一处理：置手动标记 + 作废旧结论。单条 / 批量共用，避免两处走样。 */
+    private fun KeyRecord.withPlatform(
+        platform: Platform,
+        customBaseUrl: String?,
+        customBalanceEndpoint: String?,
+    ): KeyRecord = copy(
+        platform = platform,
+        platformOverridden = true,
+        customBaseUrl = customBaseUrl?.takeIf { v -> v.isNotBlank() },
+        customBalanceEndpoint = customBalanceEndpoint?.takeIf { v -> v.isNotBlank() },
+        lastStatus = KeyStatus.PENDING,
+        lastBalance = null,
+        lastCurrency = null,
+        lastUnlimited = false,
+        lastCheckedAt = null,
+    )
 
     // ------------------------------------------------------------ 检测
 

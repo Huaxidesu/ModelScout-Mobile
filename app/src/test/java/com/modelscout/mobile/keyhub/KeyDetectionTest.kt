@@ -1,5 +1,7 @@
 package com.modelscout.mobile.keyhub
 
+import com.modelscout.mobile.keyhub.detect.ExtractedKey
+import com.modelscout.mobile.keyhub.detect.KeyDetector
 import com.modelscout.mobile.keyhub.model.Confidence
 import com.modelscout.mobile.keyhub.model.Platform
 import org.junit.Assert.assertEquals
@@ -75,10 +77,73 @@ class KeyDetectionTest {
     }
 
     @Test
-    fun `candidate platforms are not auto detected`() {
-        // 决策 3：DeepSeek / Moonshot / SiliconFlow 只是裸 sk- 候选，不得自动判成自己
-        listOf(Platform.DEEPSEEK, Platform.MOONSHOT, Platform.SILICONFLOW).forEach { platform ->
+    fun `deepseek format beats bare sk inference`() {
+        // 决策 13：DeepSeek = sk- + 32 位小写 hex，格式匹配必须压过裸 sk- 的 OpenAI 推断
+        assertDetect(
+            "sk-0123456789abcdef0123456789abcdef",
+            Platform.DEEPSEEK,
+            Confidence.INFERRED,
+        )
+    }
+
+    @Test
+    fun `deepseek detection survives surrounding text`() {
+        val text = "主号 sk-0123456789abcdef0123456789abcdef\n备用 sk-fedcba9876543210fedcba9876543210"
+        val result = KeyDetector.extractKeys(text)
+        assertEquals(2, result.keys.size)
+        result.keys.forEach { assertEquals(Platform.DEEPSEEK, it.platform) }
+        assertEquals("主号", result.keys[0].label)
+    }
+
+    @Test
+    fun `uppercase hex is not deepseek`() {
+        // DeepSeek 只发小写 hex；大写不认，避免把其它厂商的裸 sk- 误判成 DeepSeek
+        assertDetect(
+            "sk-0123456789ABCDEF0123456789ABCDEF",
+            Platform.OPENAI,
+            Confidence.INFERRED,
+        )
+    }
+
+    @Test
+    fun `wrong length hex is not deepseek`() {
+        assertDetect("sk-0123456789abcdef0123456789abcde", Platform.OPENAI, Confidence.INFERRED) // 31 位
+        assertDetect("sk-0123456789abcdef0123456789abcdef0", Platform.OPENAI, Confidence.INFERRED) // 33 位
+    }
+
+    @Test
+    fun `non hex characters are not deepseek`() {
+        // 40 位但含 g-z，属于「不知道是谁的裸 sk-」，仍归 OpenAI（推断）
+        assertDetect("sk-fake0000000000000000000000000000", Platform.OPENAI, Confidence.INFERRED)
+    }
+
+    @Test
+    fun `vendor prefixes still win over the deepseek pattern`() {
+        // pattern 只吃「32 位小写 hex」，不该抢走带厂商标识的长前缀
+        assertDetect("sk-proj-abcdefghijklmnop", Platform.OPENAI, Confidence.CERTAIN)
+        assertDetect("sk-ant-api03-abcdefghijklmnop", Platform.ANTHROPIC, Confidence.CERTAIN)
+        assertDetect("sk-or-v1-abcdefghijklmnop", Platform.OPENROUTER, Confidence.CERTAIN)
+    }
+
+    @Test
+    fun `ambiguous candidates stay manual only`() {
+        // 决策 3 仍然成立：Moonshot / SiliconFlow 是 sk- + 48 位字母数字，与旧版 OpenAI 无法区分，
+        // 不得自动判成自己。DeepSeek 因为格式可辨识，已从「候选」升级为 pattern 识别（决策 13）。
+        listOf(Platform.MOONSHOT, Platform.SILICONFLOW).forEach { platform ->
             assertEquals(emptyList<PrefixRule>(), PlatformRegistry.spec(platform).prefixes)
+            assertEquals(null, PlatformRegistry.spec(platform).pattern)
         }
+        assertEquals(emptyList<PrefixRule>(), PlatformRegistry.spec(Platform.DEEPSEEK).prefixes)
+    }
+
+    @Test
+    fun `dominant platform picks the most frequent one`() {
+        val mixed = listOf(
+            ExtractedKey("sk-0123456789abcdef0123456789abcdef", null, Platform.DEEPSEEK, Confidence.INFERRED),
+            ExtractedKey("gsk_aaaaaaaaaaaaaaaaaaaaaaaa", null, Platform.GROQ, Confidence.CERTAIN),
+            ExtractedKey("sk-fedcba9876543210fedcba9876543210", null, Platform.DEEPSEEK, Confidence.INFERRED),
+        )
+        assertEquals(Platform.DEEPSEEK, KeyDetector.dominantPlatform(mixed))
+        assertEquals(null, KeyDetector.dominantPlatform(emptyList()))
     }
 }

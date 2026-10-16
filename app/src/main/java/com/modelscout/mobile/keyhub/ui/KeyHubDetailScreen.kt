@@ -210,12 +210,18 @@ fun KeyHubDetailPage(state: KeyHubUiState, vm: KeyHubViewModel) {
     }
 }
 
-/** 手动指定平台。决策 3：只有用户显式选择，才会把 Key 发往该平台端点。 */
+/**
+ * 手动指定平台。决策 3：只有用户显式选择，才会把 Key 发往该平台端点。
+ * 批量编辑复用同一个弹窗（只换标题与说明），避免两处平台清单各写一遍。
+ */
 @Composable
 fun PlatformPickerDialog(
     current: Platform,
     onDismiss: () -> Unit,
     onConfirm: (Platform, String?, String?) -> Unit,
+    title: String = "手动指定平台",
+    hint: String = "重测将改用所选平台的端点。裸 sk- 默认按 OpenAI（推断）处理。",
+    confirmLabel: String = "确定",
 ) {
     var selected by remember { mutableStateOf(current) }
     var baseUrl by remember { mutableStateOf("") }
@@ -223,14 +229,14 @@ fun PlatformPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("手动指定平台") },
+        title = { Text(title) },
         text = {
             Column(
                 Modifier.verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Text(
-                    "重测将改用所选平台的端点。裸 sk- 默认按 OpenAI（推断）处理。",
+                    hint,
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -265,7 +271,7 @@ fun PlatformPickerDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(selected, baseUrl, balanceUrl) }) { Text("确定") }
+            TextButton(onClick = { onConfirm(selected, baseUrl, balanceUrl) }) { Text(confirmLabel) }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
     )
