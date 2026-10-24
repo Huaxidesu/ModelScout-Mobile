@@ -10,7 +10,7 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
 /**
- * AndroidKeyStore 里的 AES256-GCM 主钥（计划书 §4.5）。
+ * AndroidKeyStore 里的 AES256-GCM 主钥。
  * 密文格式：`[ivLen:1][iv][cipherText+tag]`。
  */
 class KeystoreCipher(private val alias: String = KeyHubConfig.KEYSTORE_ALIAS) : KeyCipher {

@@ -9,17 +9,17 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 
 /**
- * 计划书 2.2 /models 拉取解析，兼容三形态：
- *   {"data":[...]} / {"models":[...]} / 裸数组 [...]
+ * /models 拉取解析，兼容三形态：
+ * {"data":[...]} / {"models":[...]} / 裸数组 [...]
  * id 必需（缺失回退 name / model，都没有则跳过），结果按 id 排序。
  *
  * 声明字段支持两种 schema：
- *  A. 扁平 OpenRouter 风格：`supported_parameters: ["tools","reasoning"]`、
- *     `input_modalities: ["text","image"]`、顶层 `max_context_length.value`。
- *  B. 嵌套模态 schema（Intern Discovery 等）：`input_modalities: [{type, supported_inputs.max_context_length}]`、
- *     `output_modalities: [{max_length, supported_parameters:{tools,reasoning,max_tokens.max}}]`。
+ * A. 扁平 OpenRouter 风格：`supported_parameters: ["tools","reasoning"]`、
+ * `input_modalities: ["text","image"]`、顶层 `max_context_length.value`。
+ * B. 嵌套模态 schema（Intern Discovery 等）：`input_modalities: [{type, supported_inputs.max_context_length}]`、
+ * `output_modalities: [{max_length, supported_parameters:{tools,reasoning,max_tokens.max}}]`。
  *
- * 声明优先于探测：命中即跳过对应探测请求（计划书 2.2）。
+ * 声明优先于探测：命中即跳过对应探测请求。
  */
 object ModelsParser {
 
@@ -108,7 +108,7 @@ object ModelsParser {
             )
         }
 
-        // ---------------- 扁平 OpenRouter 风格兜底 ----------------
+        // ---- 扁平 OpenRouter 风格的后备解析路径 ----
         val flatParams = obj["supported_parameters"].asStringList()
         if (declaredTool != true && flatParams.any { it.equals("tools", ignoreCase = true) }) {
             declaredTool = true

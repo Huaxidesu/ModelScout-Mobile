@@ -3,12 +3,12 @@ package com.modelscout.mobile.core.parse
 import com.modelscout.mobile.core.Constants
 
 /**
- * 计划书 2.4 上限探测的报错文本解析。
+ * 上限探测的报错文本解析。
  *
- * 解析要点（照抄，别改）：
+ * 解析要点（与上游报错格式逐一对应，修改需同步真实报错样本验证）：
  * 1. 文本必须含 too large / exceed / at most / maximum / 超出 / 超过 / 上限 / 最大 / 不支持 之一才解析（防普通 400 误判）；
  * 2. 输出上限关键词：max_tokens ... at most N / completion tokens / maximum allowed / 中文「最大输出 / 上限为」；
- *    上下文关键词：maximum context length is N / maximum model length N / 中文「上下文长度 / 窗口」；
+ * 上下文关键词：maximum context length is N / maximum model length N / 中文「上下文长度 / 窗口」；
  * 3. 取候选最大值、剔除 >= 900000 的数（那是回显的请求值）；
  * 4. 支持 128k / 1.5m 与 128,000 千位分隔；
  * 5. 若上下文 < 输出（矛盾），丢弃输出保留上下文。

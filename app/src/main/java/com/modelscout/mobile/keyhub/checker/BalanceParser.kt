@@ -10,7 +10,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
 /**
- * 余额解析。解析路径以实际响应为准，多候选路径容错（计划书 §4.1）。
+ * 余额解析。解析路径以实际响应为准，多候选路径容错。
  * 路径语法：点分 + `[n]` 索引，如 `balance_infos[0].total_balance`。
  */
 object BalanceParser {

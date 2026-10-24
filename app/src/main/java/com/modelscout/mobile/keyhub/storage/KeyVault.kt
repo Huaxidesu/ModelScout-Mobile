@@ -8,7 +8,7 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 
 /**
- * 加密落盘（计划书 §4.5）。
+ * 加密落盘。
  * - `keys.enc` / `history.enc`，AES-GCM 密文；
  * - 文件缺失或损坏 → 回退空列表，不抛异常；
  * - 关闭开关或「清除数据」→ 删除两个文件。

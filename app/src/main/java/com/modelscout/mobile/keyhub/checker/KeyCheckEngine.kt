@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 /**
- * 检测引擎（计划书 §4.3）。单 Key 重测与整批共用同一入口。
+ * 检测引擎。单 Key 重测与整批共用同一入口。
  * 并发用有界 worker 池；中止是协作式的，在阶段边界检查。
  */
 class KeyCheckEngine(

@@ -24,7 +24,7 @@ data class AddResult(
 }
 
 /**
- * KeyHub 的**单一数据源**。列表与历史都只有这一份 StateFlow，UI 派生显示，不另存副本。
+ * KeyHub 的单一数据源。列表与历史都只有这一份 StateFlow，UI 派生显示，不另存副本。
  * 检测结果由引擎算好回写，进度由引擎下发（沿用「界面永远 0/0」的教训）。
  */
 class KeyHubStore(

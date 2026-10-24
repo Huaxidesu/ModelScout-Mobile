@@ -7,7 +7,7 @@ import com.modelscout.mobile.keyhub.model.TransportError
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-/** 测试组 2：分类矩阵 12 例（计划书 §4.4）。UI 不得绕过这个函数自行推断。 */
+/** 测试组 2：分类矩阵 12 例。UI 不得绕过这个函数自行推断。 */
 class KeyClassifierTest {
 
     @Test

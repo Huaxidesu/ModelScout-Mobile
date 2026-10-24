@@ -7,7 +7,7 @@ import com.modelscout.mobile.keyhub.model.Platform
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-/** 测试组 1：前缀识别 10 例（计划书 §4.6）。 */
+/** 测试组 1：前缀识别 10 例。 */
 class KeyDetectionTest {
 
     private fun assertDetect(raw: String, platform: Platform, confidence: Confidence) {

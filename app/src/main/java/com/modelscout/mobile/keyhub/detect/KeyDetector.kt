@@ -19,7 +19,7 @@ data class ExtractionResult(
 }
 
 /**
- * 识别与粘贴解析（计划书 §4.2）。
+ * 识别与粘贴解析。
  * 分隔符：换行 / 逗号 / 分号 / 空白 / JSON 数组引号——由注册表生成的正则自然覆盖。
  */
 object KeyDetector {
@@ -77,7 +77,7 @@ object KeyDetector {
 
     /**
      * 整批里出现次数最多的平台，用于「手动指定」时的预选值。
-     * 并列时取**先出现**的那个（保持粘贴顺序的直觉）；空集合返回 null。
+     * 并列时取先出现的那个（保持粘贴顺序的直觉）；空集合返回 null。
      */
     fun dominantPlatform(keys: List<ExtractedKey>): Platform? =
         keys.groupingBy { it.platform }

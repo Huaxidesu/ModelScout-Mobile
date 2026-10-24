@@ -7,7 +7,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
 /**
- * 计划书 2.3 探测结果三态判定。
+ * 探测结果三态判定。
  * 2xx -> 支持；4xx 且报错含关键词 -> 不支持；其他（429/401 等）-> 未知。
  */
 object CapabilityJudge {
@@ -47,7 +47,7 @@ object CapabilityJudge {
     }
 
     /**
-     * 上一步响应体的 reasoning_content / .reasoning 非空判定（计划书 2.3）。
+     * 上一步响应体的 reasoning_content / .reasoning 非空判定。
      * 支持字符串与数组两种形态（部分网关返回 [{type:text,text:...}]）。
      */
     fun hasReasoningContent(body: String): Boolean {

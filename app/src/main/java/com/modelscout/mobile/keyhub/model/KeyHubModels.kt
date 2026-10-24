@@ -83,10 +83,10 @@ data class KeyRecord(
     val lastStatus: KeyStatus = KeyStatus.PENDING,
     val lastBalance: Double? = null,
     val lastCurrency: String? = null,
-    /** 平台返回「无上限」时为 true（OpenRouter limit=null）。计划书 schema 未列，为渲染 ∞ 必需。 */
+    /** 平台返回「无上限」时为 true（OpenRouter limit=null），为渲染 ∞ 必需。 */
     val lastUnlimited: Boolean = false,
     val lastCheckedAt: Long? = null,
-    /** 自定义平台的 baseUrl（计划书 §4.1「用户填 baseUrl + /models」）。 */
+    /** 自定义平台的 baseUrl。 */
     val customBaseUrl: String? = null,
     /** 自定义平台可选的余额端点。 */
     val customBalanceEndpoint: String? = null,

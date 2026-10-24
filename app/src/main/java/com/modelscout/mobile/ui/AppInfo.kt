@@ -2,11 +2,11 @@ package com.modelscout.mobile.ui
 
 import com.modelscout.mobile.BuildConfig
 
-/** 应用元信息与外部链接，集中一处便于改。 */
+/** 应用元信息与外部链接的集中定义处，便于统一维护。 */
 object AppInfo {
     const val NAME = "ModelScout"
 
-    /** 版本号唯一来源是 gradle/libs.versions.toml，这里只做读取，不要手写字符串。 */
+    /** 版本号唯一来源是 gradle/libs.versions.toml，此处仅读取，禁止手写字符串。 */
     val VERSION: String = BuildConfig.VERSION_NAME
     val VERSION_CODE: Int = BuildConfig.VERSION_CODE
 

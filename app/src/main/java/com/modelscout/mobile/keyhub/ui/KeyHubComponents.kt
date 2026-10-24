@@ -103,7 +103,7 @@ fun TimeLabel(epochMillis: Long?, modifier: Modifier = Modifier) {
 }
 
 /**
- * 自绘折线图（计划书 §5.4 / 决策 5，不引入图表依赖）。
+ * 自绘折线图。
  * x = 时间（最近 30 点）、y = 余额自适应、null 断开连线、首尾标数值。
  */
 @Composable

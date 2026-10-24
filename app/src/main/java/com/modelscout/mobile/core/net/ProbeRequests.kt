@@ -9,7 +9,7 @@ import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
 
 /**
- * 计划书 2.3 探测请求体（照抄，别改）。
+ * 探测请求体：字段与上游探测协议一一对应，修改需同步验证脚本。
  */
 object ProbeRequests {
 

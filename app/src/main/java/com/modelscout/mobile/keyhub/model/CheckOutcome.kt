@@ -4,7 +4,7 @@ package com.modelscout.mobile.keyhub.model
 enum class TransportError { TIMEOUT, DNS, TLS, NETWORK }
 
 /**
- * 一次检测的原始产出。**只描述事实，不含结论**——结论一律由 [com.modelscout.mobile.keyhub.KeyClassifier] 产出。
+ * 一次检测的原始产出。只描述事实，不含结论——结论一律由 [com.modelscout.mobile.keyhub.KeyClassifier] 产出。
  *
  * @param httpCode null 表示没拿到响应
  * @param transport 传输层失败

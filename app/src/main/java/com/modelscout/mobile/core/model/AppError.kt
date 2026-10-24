@@ -7,7 +7,7 @@ import java.net.UnknownHostException
 import javax.net.ssl.SSLException
 
 /**
- * 计划书 2.7 错误表，各配一句中文文案。
+ * 错误表，各配一句中文文案。
  * endpointLevel = true 表示端点级错误：整轮直接终止，不重试其他模型。
  */
 enum class ErrorKind(val message: String, val endpointLevel: Boolean = false) {

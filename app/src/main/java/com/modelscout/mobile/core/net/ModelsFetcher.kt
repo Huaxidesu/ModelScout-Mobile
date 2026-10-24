@@ -18,7 +18,7 @@ data class ModelsFetchResult(
 )
 
 /**
- * 计划书 2.2 /models 拉取。超时放宽到 max(配置, 60s)（由传入 client 保证）。
+ * /models 拉取。超时放宽到 max(配置, 60s)（由传入 client 保证）。
  * 404 时提示「Base URL 可能缺 /v1 路径」。
  */
 class ModelsFetcher(

@@ -118,7 +118,7 @@ class EngineFlowTest {
         val accepts = server.requestCount
         assertEquals(1 /* models */ + 2 * 3 /* 两个模型各 3 次探测 */, accepts)
 
-        // ---- 请求体符合计划书 2.3 ----
+        // ---- 请求体符合----
         val chatBodies = recorded.filter { it.first.endsWith("/chat/completions") }.map { it.second }
         val toolBodies = chatBodies.filter { it.contains("\"tools\"") }
         val visionBodies = chatBodies.filter { it.contains("image_url") }

@@ -13,7 +13,7 @@ data class DictEntry(
 )
 
 /**
- * 计划书 2.4：内置字典 assets/model_params.json（首版 20 条）。
+ * ：内置字典 assets/model_params.json（首版 20 条）。
  * 匹配规则：先精确 id，再子串匹配（取最长 match 命中）。
  */
 class ModelParamDictionary(private val entries: List<DictEntry>) {

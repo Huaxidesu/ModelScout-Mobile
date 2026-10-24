@@ -1,7 +1,7 @@
 package com.modelscout.mobile.core.net
 
 /**
- * 计划书 2.5：提取后去掉具体接口路径再规整，防止拼出双份路径。
+ * ：提取后去掉具体接口路径再规整，防止拼出双份路径。
  * 只做「去掉已知端点后缀 + 去尾斜杠」，不自动补 /v1（404 时由 UI 提示）。
  */
 object UrlNormalizer {

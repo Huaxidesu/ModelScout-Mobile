@@ -15,7 +15,7 @@ enum class DshFormat(val label: String, val extension: String) {
 }
 
 /**
- * 计划书 2.6 DeepSeekHardness：输出 JSONC / JSON / TOML 三种形态让用户挑。
+ * DeepSeekHardness：输出 JSONC / JSON / TOML 三种形态让用户挑。
  * 界面须注明「格式基于公开资料假设，以官方 README 为准」。不用精雕。
  */
 object DshGenerator {

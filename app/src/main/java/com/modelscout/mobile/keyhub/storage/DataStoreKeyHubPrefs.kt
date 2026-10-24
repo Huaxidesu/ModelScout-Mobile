@@ -16,7 +16,7 @@ private val Context.keyHubDataStore: DataStore<Preferences> by preferencesDataSt
 
 /**
  * 「本地保存（加密）」开关 + 并发数。
- * 注意：开关本身**不加密**（它不含敏感信息），只有 keys.enc / history.enc 走 Keystore。
+ * 注意：开关本身不加密（它不含敏感信息），只有 keys.enc / history.enc 走 Keystore。
  */
 class DataStoreKeyHubPrefs(private val context: Context) : KeyHubPrefs {
 

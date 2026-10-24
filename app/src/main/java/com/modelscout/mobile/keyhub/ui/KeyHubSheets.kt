@@ -34,7 +34,7 @@ import com.modelscout.mobile.keyhub.KeyHubConfig
 import com.modelscout.mobile.keyhub.model.Confidence
 import com.modelscout.mobile.keyhub.model.Platform
 
-/** 添加 Sheet（计划书 §5.3）。支持「自动识别 / 手动指定平台」两种批量入库模式。 */
+/** 添加 Sheet。支持「自动识别 / 手动指定平台」两种批量入库模式。 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KeyHubAddSheet(state: KeyHubUiState, vm: KeyHubViewModel) {
@@ -190,7 +190,7 @@ fun KeyHubAddSheet(state: KeyHubUiState, vm: KeyHubViewModel) {
     }
 }
 
-/** 设置 Sheet（计划书 §5.5）。 */
+/** 设置 Sheet。 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KeyHubSettingsSheet(state: KeyHubUiState, vm: KeyHubViewModel) {

@@ -25,7 +25,7 @@ class AbortFlag {
 }
 
 /**
- * 进度状态。total / completed / percent / results 全部来自引擎的**同一份**结果表，
+ * 进度状态。total / completed / percent / results 全部来自引擎的同一份结果表，
  * 避免历史上「双变量导致界面永远 0/0」的 bug。
  */
 data class ScanState(

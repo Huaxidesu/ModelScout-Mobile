@@ -18,7 +18,7 @@ import org.junit.Test
  * 运行方式（凭证走 Gradle 属性，不落仓库）：
  * ```
  * ./gradlew testDebugUnitTest --tests "*RealGatewayIT*" \
- *   -PrealGateway=1 -PrealBaseUrl=https://xxx/v1 -PrealApiKey=sk-xxx
+ * -PrealGateway=1 -PrealBaseUrl=https://xxx/v1 -PrealApiKey=sk-xxx
  * ```
  */
 class RealGatewayIT {

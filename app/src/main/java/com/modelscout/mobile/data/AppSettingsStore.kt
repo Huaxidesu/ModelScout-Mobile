@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.map
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "modelscout_settings")
 
 /**
- * 非敏感设置持久化。**API Key 只存内存**（计划书 R2 连接页要求），因此这里不落盘任何密钥。
+ * 非敏感设置持久化。API Key 只存内存，因此这里不落盘任何密钥。
  */
 class AppSettingsStore(private val context: Context) {
 

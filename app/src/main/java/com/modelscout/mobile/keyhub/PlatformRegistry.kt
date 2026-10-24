@@ -10,7 +10,7 @@ enum class AuthStyle { BEARER, X_API_KEY, X_GOOG_API_KEY, NONE }
 data class PrefixRule(val value: String, val confidence: Confidence = Confidence.CERTAIN)
 
 /**
- * 一个平台的全部事实。**加平台 = 在这里加一条记录**，其它文件不许出现平台分支（计划书 §二.1）。
+ * 一个平台的全部事实。加平台 = 在这里加一条记录，其它文件不许出现平台分支。
  */
 data class PlatformSpec(
     val platform: Platform,
@@ -28,7 +28,7 @@ data class PlatformSpec(
     val balanceCurrencyPaths: List<String> = emptyList(),
     /** 该路径为 null 时表示「无上限」。 */
     val unlimitedWhenPathNull: String? = null,
-    /** 响应里没有币种时的兜底币种。 */
+    /** 响应里没有币种时使用的后备币种。 */
     val defaultCurrency: String? = null,
     /** baseUrl 由用户运行时提供（自定义平台）。 */
     val runtimeBaseUrl: Boolean = false,
@@ -51,13 +51,13 @@ data class Detection(val platform: Platform, val confidence: Confidence) {
 }
 
 /**
- * 平台知识单点（计划书 §4.1）。前缀、鉴权头、端点、余额解析路径全部收在这一个文件里。
+ * 平台知识单点。前缀、鉴权头、端点、余额解析路径全部收在这一个文件里。
  *
- * 决策 3：裸 `sk-` 识别为「OpenAI 兼容（推断）」，**禁止**自动把 Key 发往多个平台试错；
- * Moonshot / SiliconFlow 都只是裸 `sk-` 的**候选**，必须用户手动指定。
+ * 决策 3：裸 `sk-` 识别为「OpenAI 兼容（推断）」，禁止自动把 Key 发往多个平台试错；
+ * Moonshot / SiliconFlow 都只是裸 `sk-` 的候选，必须用户手动指定。
  *
  * 决策 13：DeepSeek 的 Key 是 `sk-` + 32 位小写 hex，格式自带辨识度 → 用 pattern 识别，
- * 并且 **pattern 优先于裸 `sk-` 推断**。详见 [detect]。
+ * 并且 pattern 优先于裸 `sk-` 推断。详见 [detect]。
  */
 object PlatformRegistry {
 
@@ -182,15 +182,15 @@ object PlatformRegistry {
         byPlatform[platform] ?: error("PlatformRegistry 缺少 $platform 的登记")
 
     /**
-     * 识别平台（决策 13 定顺序，**顺序本身就是规则**）：
+     * 识别平台（决策 13 定顺序，顺序本身就是规则）：
      *
-     * 1. **CERTAIN 前缀**（最长优先）—— 前缀里直接带厂商标识，最可靠；
-     * 2. **格式 pattern** —— 前缀通用但格式有厂商特征（DeepSeek = `sk-` + 32 位小写 hex）。
-     *    必须排在裸 `sk-` 之前，否则 DeepSeek 永远被 OpenAI 抢走；
-     * 3. **INFERRED 前缀** —— 裸 `sk-` 兜底成「OpenAI 兼容（推断）」；
+     * 1. CERTAIN 前缀（最长优先）—— 前缀里直接带厂商标识，最可靠；
+     * 2. 格式 pattern —— 前缀通用但格式有厂商特征（DeepSeek = `sk-` + 32 位小写 hex）。
+     * 必须排在裸 `sk-` 之前，否则 DeepSeek 永远被 OpenAI 抢走；
+     * 3. INFERRED 前缀——裸 `sk-` 后备归入「OpenAI 兼容（推断）」；
      * 4. 都不中 → 自定义（推断）。
      *
-     * 这里只做**纯文本判断**，不发任何请求。拿不准的平台由用户在「手动指定」里定。
+     * 这里只做纯文本判断，不发任何请求。拿不准的平台由用户在「手动指定」里定。
      */
     fun detect(rawKey: String): Detection {
         val key = rawKey.trim()
@@ -209,7 +209,7 @@ object PlatformRegistry {
     }
 
     /**
-     * 由注册表自动生成的提取正则：所有前缀 + 平台正则 + 32 位以上 token 兜底（低置信度）。
+     * 由注册表自动生成的提取正则：所有前缀 + 平台正则 + 32 位以上 token 的后备匹配（低置信度）。
      */
     val tokenRegex: Regex by lazy {
         val alternatives = mutableListOf<String>()

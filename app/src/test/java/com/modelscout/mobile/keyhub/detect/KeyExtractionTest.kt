@@ -6,7 +6,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** 测试组 4：粘贴解析 4 例（计划书 §4.2）。 */
+/** 测试组 4：粘贴解析 4 例。 */
 class KeyExtractionTest {
 
     @Test

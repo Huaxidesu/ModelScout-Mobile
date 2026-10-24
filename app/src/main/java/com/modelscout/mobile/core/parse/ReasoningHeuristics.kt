@@ -1,7 +1,7 @@
 package com.modelscout.mobile.core.parse
 
 /**
- * 计划书 2.3 推理模型判定：默认不发请求，用名称正则 + 响应体 reasoning_content/.reasoning 非空判定。
+ * 推理模型判定：默认不发请求，用名称正则 + 响应体 reasoning_content/.reasoning 非空判定。
  */
 object ReasoningHeuristics {
 

@@ -4,7 +4,7 @@ import com.modelscout.mobile.core.net.UrlNormalizer
 import java.net.URI
 
 /**
- * 计划书 2.5 连接智能提取（纯函数，一段正则逻辑）。
+ * 连接智能提取（纯函数，一段正则逻辑）。
  * 宁可漏识别，不可错识别。
  */
 object ConnectionExtractor {

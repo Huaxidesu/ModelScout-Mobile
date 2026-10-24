@@ -49,7 +49,7 @@ import androidx.compose.ui.unit.sp
 import com.modelscout.mobile.keyhub.KeyHubConfig
 import com.modelscout.mobile.keyhub.model.Platform
 
-/** 详情页（计划书 §5.4）。 */
+/** 详情页。 */
 @Composable
 fun KeyHubDetailPage(state: KeyHubUiState, vm: KeyHubViewModel) {
     val record = state.detail ?: return

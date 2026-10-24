@@ -5,7 +5,7 @@ package com.modelscout.mobile.keyhub
  */
 object KeyHubConfig {
 
-    /** 独立 OkHttp 实例：connect 10s / read 15s（计划书 §4.3）。 */
+    /** 独立 OkHttp 实例：connect 10s / read 15s。 */
     const val CONNECT_TIMEOUT_SECONDS = 10L
     const val READ_TIMEOUT_SECONDS = 15L
     const val WRITE_TIMEOUT_SECONDS = 15L
@@ -15,11 +15,11 @@ object KeyHubConfig {
     const val MIN_CONCURRENCY = 1
     const val MAX_CONCURRENCY = 5
 
-    /** 历史快照上限（计划书 §4.5）。 */
+    /** 历史快照上限。 */
     const val HISTORY_PER_KEY_LIMIT = 500
     const val HISTORY_GLOBAL_LIMIT = 50_000
 
-    /** 折线图展示的最近点数（计划书 §5.4）。 */
+    /** 折线图展示的最近点数。 */
     const val CHART_MAX_POINTS = 30
 
     const val ACCEPT_JSON = "application/json"

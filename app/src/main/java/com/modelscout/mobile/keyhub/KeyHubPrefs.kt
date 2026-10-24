@@ -2,7 +2,7 @@ package com.modelscout.mobile.keyhub
 
 import kotlinx.coroutines.flow.Flow
 
-/** KeyHub 的持久化偏好。开关默认关（计划书 §4.5）。 */
+/** KeyHub 的持久化偏好。开关默认关。 */
 interface KeyHubPrefs {
     val persistEnabled: Flow<Boolean>
     val concurrency: Flow<Int>

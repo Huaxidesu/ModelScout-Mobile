@@ -1,7 +1,7 @@
 package com.modelscout.mobile.core
 
 /**
- * 计划书 2.1 必守常量。全项目唯一来源，禁止在别处硬编码这些数值。
+ * 必守常量。全项目唯一来源，禁止在别处硬编码这些数值。
  */
 object Constants {
 
@@ -38,9 +38,9 @@ object Constants {
     /**
      * 视觉探测用的图片（64x64 纯色 PNG，133 字节）。
      *
-     * 注意：计划书原文写的是「1x1 透明 PNG」，但实测（Intern Discovery API）1x1 会被上游
-     * 判为 "image file is truncated"，导致**真视觉模型被误判为不支持**。改用 64x64 后
-     * 真视觉模型正常返回 200 并能描述图片内容。
+     * 使用 64x64 而非 1x1：部分网关会把 1x1 图片判为
+     * "image file is truncated"，导致真视觉模型被误判为不支持；
+     * 64x64 图片真视觉模型正常返回 200 并能描述图片内容。
      */
     const val PROBE_IMAGE_PNG_BASE64 =
         "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAATElEQVR42u3PQQkAAAgEsItucy+Cb2GwAktmfxMQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQuBQXsPFaWqd+fAAAAABJRU5ErkJggg=="
@@ -48,7 +48,7 @@ object Constants {
     /** 视觉探测图片的 MIME 前缀。 */
     const val PROBE_IMAGE_DATA_URL_PREFIX = "data:image/png;base64,"
 
-    /** 单模型流水线阶段权重（计划书 2.8）。 */
+    /** 单模型流水线阶段权重。 */
     const val STAGE_WEIGHT_TOOL = 20
     const val STAGE_WEIGHT_VISION = 40
     const val STAGE_WEIGHT_REASONING = 60
@@ -58,7 +58,7 @@ object Constants {
     /** 上限候选剔除阈值：>= 900000 视为回显的请求值。 */
     const val LIMIT_ECHO_THRESHOLD = 900_000
 
-    /** 生成配置时 limit 字段必填，未知时的兜底值。 */
+    /** 生成配置时 limit 字段必填，未知时使用的后备值。 */
     const val FALLBACK_CONTEXT_LIMIT = 128_000
     const val FALLBACK_OUTPUT_LIMIT = 4_096
 

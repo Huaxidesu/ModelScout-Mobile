@@ -4,7 +4,7 @@ import com.modelscout.mobile.core.Constants
 import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 
-/** 计划书 2.1：connect_timeout 15s；读写超时取配置值（下限 5s）。 */
+/** ：connect_timeout 15s；读写超时取配置值（下限 5s）。 */
 object HttpClients {
 
     fun create(timeoutSeconds: Long): OkHttpClient {

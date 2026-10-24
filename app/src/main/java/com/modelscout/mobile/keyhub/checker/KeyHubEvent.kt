@@ -4,7 +4,7 @@ import com.modelscout.mobile.core.model.ErrorKind
 import com.modelscout.mobile.keyhub.model.Balance
 import com.modelscout.mobile.keyhub.model.KeyStatus
 
-/** 检测事件流（计划书 §4.3）。 */
+/** 检测事件流。 */
 sealed interface KeyHubEvent {
     data class KeyChecked(
         val keyId: String,

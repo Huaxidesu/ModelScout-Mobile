@@ -32,7 +32,7 @@ class ErrorParsingTest {
         assertEquals(128000, separated.context)
 
         val million = LimitParser.parse("This model's maximum context length is 1.5m tokens")
-        // 1.5m 能被正确解析成 1500000，但按计划书规则 >= 900000 视为回显值被剔除
+        // 1.5m 能被正确解析成 1500000，但按解析规则 >= 900000 视为回显值被剔除
         assertNull(million.context)
     }
 

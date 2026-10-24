@@ -23,7 +23,7 @@ import org.junit.Test
  * ```
  * # 单 Key（自定义平台）
  * ./gradlew testDebugUnitTest --tests "*RealKeyHubIT*" -PrealGateway=1 \
- *   -PkeyhubBaseUrl=https://xxx/v1 -PkeyhubApiKey=sk-xxx
+ * -PkeyhubBaseUrl=https://xxx/v1 -PkeyhubApiKey=sk-xxx
  *
  * # 批量（同厂家一批 Key，逗号分隔；推荐写进 gitignored 的 local.secrets.properties）
  * # local.secrets.properties:  realGateway=1
@@ -136,10 +136,10 @@ class RealKeyHubIT {
      * 批量冒烟：一整批同厂家的 Key（走 `local.secrets.properties` 的 `keyhubBatchKeys`，逗号分隔）。
      *
      * 验证两件事：
-     * 1. **识别**：每个 Key 都被 [PlatformRegistry.detect] 判成 DeepSeek，而不是被裸 `sk-` 抢成 OpenAI（决策 13）；
-     * 2. **余额端点**：DeepSeek 的 `/user/balance` + 解析路径真的能跑通（GOTCHAS §3 一直缺的端到端验证）。
+     * 1. 识别：每个 Key 都被 [PlatformRegistry.detect] 判成 DeepSeek，而不是被裸 `sk-` 抢成 OpenAI（决策 13）；
+     * 2. 余额端点：DeepSeek 的 `/user/balance` + 解析路径真的能跑通（GOTCHAS §3 一直缺的端到端验证）。
      *
-     * 只打印**指纹**，绝不打印明文。
+     * 只打印指纹，绝不打印明文。
      */
     @Test
     fun `a batch of deepseek keys is detected and checked end to end`() = runBlocking {
@@ -186,7 +186,7 @@ class RealKeyHubIT {
         }
 
         // 2. 端点 + 解析：至少要有一个 Key 走到明确结论，
-        //    全是 CHECK_FAILED 说明端点或解析路径没跑通（或本机网络/代理有问题）。
+        // 全是 CHECK_FAILED 说明端点或解析路径没跑通（或本机网络/代理有问题）。
         val definitive = statuses.count {
             it == KeyStatus.AVAILABLE || it == KeyStatus.INSUFFICIENT || it == KeyStatus.INVALID
         }

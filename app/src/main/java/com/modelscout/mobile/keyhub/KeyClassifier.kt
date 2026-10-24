@@ -4,7 +4,7 @@ import com.modelscout.mobile.keyhub.model.CheckOutcome
 import com.modelscout.mobile.keyhub.model.KeyStatus
 
 /**
- * 分类单点（计划书 §4.4）。状态**只能**由这个纯函数产出，UI 禁止自行推断。
+ * 分类单点。状态只能由这个纯函数产出，UI 禁止自行推断。
  *
  * | 输入 | 结论 |
  * |---|---|
@@ -18,7 +18,7 @@ import com.modelscout.mobile.keyhub.model.KeyStatus
  * | 200 + 响应解析失败 | 查询失败 |
  * | 平台仅存储 | 待检测 |
  *
- * 决策 6：429 一律归「查询失败」，**绝不**判「已失效」。
+ * 决策 6：429 一律归「查询失败」，绝不判「已失效」。
  */
 object KeyClassifier {
 

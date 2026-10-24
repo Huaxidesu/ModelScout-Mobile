@@ -23,7 +23,7 @@ data class RawResponse(
 }
 
 /**
- * 计划书 2.3 探测执行器。所有请求带 Accept: application/json。
+ * 探测执行器。所有请求带 Accept: application/json。
  * 支持协作式中止：cancelAll() 会取消在途请求。
  */
 class ProbeClient(

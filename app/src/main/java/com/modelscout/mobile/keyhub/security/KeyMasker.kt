@@ -3,12 +3,12 @@ package com.modelscout.mobile.keyhub.security
 import java.security.MessageDigest
 
 /**
- * Key 脱敏（计划书 §4.5）。**不复用** core 的 Redactor.mask——那份是给网关日志用的
+ * Key 脱敏。不复用 core 的 Redactor.mask——那份是给网关日志用的
  * 「前3后4」，KeyHub 要求「前5后4」。
  */
 object KeyMasker {
 
-    /** 长度 >= 12 → 前 5 + `***` + 后 4（`sk-ab***cdef` 样式）；否则等长星号。 */
+    /** 长度 >= 12 → 前 5 + `*` + 后 4（`sk-ab*cdef` 样式）；否则等长星号。 */
     fun mask(key: String): String {
         if (key.isEmpty()) return ""
         return if (key.length >= 12) {

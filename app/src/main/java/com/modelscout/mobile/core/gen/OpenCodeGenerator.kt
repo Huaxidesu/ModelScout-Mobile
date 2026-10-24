@@ -9,9 +9,9 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonObject
 
 /**
- * 计划书 2.6 OpenCode 配置生成（重点，有两个坑）。
+ * OpenCode 配置生成（重点，有两个坑）。
  *
- * ★ toolcall / attachment / reasoning 必须是**顶层字段**，写成 capabilities:{...} 会过不了 schema 校验。
+ * ★ toolcall / attachment / reasoning 必须是顶层字段，写成 capabilities:{...} 会过不了 schema 校验。
  * ★ limit.context / limit.output 均必填。
  */
 object OpenCodeGenerator {

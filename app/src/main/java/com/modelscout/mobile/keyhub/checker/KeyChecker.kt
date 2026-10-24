@@ -29,7 +29,7 @@ fun interface EndpointResolver {
     fun resolve(spec: PlatformSpec, record: KeyRecord): Endpoint?
 }
 
-/** 默认：完全由 PlatformRegistry 决定（计划书 §4.1）。 */
+/** 默认：完全由 PlatformRegistry 决定。 */
 object RegistryEndpointResolver : EndpointResolver {
     override fun resolve(spec: PlatformSpec, record: KeyRecord): Endpoint? {
         if (spec.runtimeBaseUrl) {
@@ -46,10 +46,10 @@ object RegistryEndpointResolver : EndpointResolver {
 }
 
 /**
- * 单 Key 检测（计划书 §4.3）。只发一次请求：
+ * 单 Key 检测。只发一次请求：
  * 有余额端点 → 打余额端点；无余额端点 → 打有效性端点。
  *
- * 决策 3：**绝不**把同一个 Key 发往多个平台试错；发到哪个端点完全由记录的 platform 决定。
+ * 决策 3：绝不把同一个 Key 发往多个平台试错；发到哪个端点完全由记录的 platform 决定。
  */
 class KeyChecker(
     private val client: OkHttpClient,

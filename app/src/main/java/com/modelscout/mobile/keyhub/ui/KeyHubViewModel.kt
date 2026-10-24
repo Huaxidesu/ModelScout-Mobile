@@ -90,7 +90,7 @@ data class KeyHubUiState(
 
     /**
      * 手动模式下的预选平台：用户显式选过就用它，否则用整批里最常见的平台
-     * （例如整批 16 个 DeepSeek Key → 直接预选 DeepSeek），再兜底「自定义」。
+     * （例如整批 16 个 DeepSeek Key → 直接预选 DeepSeek），最后后备「自定义」。
      */
     val addManualPlatform: Platform
         get() = addPlatformOverride
@@ -279,7 +279,7 @@ class KeyHubViewModel(
         it.copy(selectedIds = KeyHubListOps.toggleSelection(it.selectedIds, id))
     }
 
-    /** 全选 / 取消全选（作用于当前**可见**的列表，尊重筛选条件）。 */
+    /** 全选 / 取消全选（作用于当前可见的列表，尊重筛选条件）。 */
     fun toggleSelectAll() = _state.update {
         if (KeyHubListOps.isAllSelected(it.visible, it.selectedIds)) {
             it.copy(selectedIds = emptySet())

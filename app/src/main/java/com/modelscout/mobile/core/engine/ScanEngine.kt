@@ -29,7 +29,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 
 /**
- * 计划书 2.8 引擎行为。
+ * 引擎行为。
  * 单模型流水线：工具 -> 视觉 -> 推理（复用响应）-> 上限（字典优先）。
  * Semaphore 语义用有界 worker 池实现；进度公式 percent = (已完成 + 当前阶段进度) * 100 / 总数。
  */
@@ -337,7 +337,7 @@ internal class ScanSession(
         onLog(Redactor.redact(message, config.apiKey))
     }
 
-    /** 上游文本展示前一律脱敏（计划书 2.7）。 */
+    /** 上游文本展示前一律脱敏。 */
     private fun logUpstream(modelId: String, label: String, response: RawResponse) {
         if (response.body.isBlank()) return
         val snippet = response.body.replace(WHITESPACE, " ").trim().take(300)
