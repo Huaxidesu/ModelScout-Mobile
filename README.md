@@ -21,7 +21,7 @@
 
 ## 项目简介
 
-本项目提供**桌面版**与**手机版**两个版本，功能一致，本仓库为手机版（Android）；桌面版见 [ModelScout Desktop](https://github.com/Huaxidesu/ModelScout-Desktop)。
+本项目提供**桌面版**与**移动版**两个版本，功能一致，本仓库为移动版（Android）；桌面版见 [ModelScout Desktop](https://github.com/Huaxidesu/ModelScout-Desktop)。
 
 使用大模型 API 时，不同模型支持的功能和参数限制可能有所不同。例如，部分模型支持图片输入或工具调用，不同模型能够处理的文本长度也存在差异。这些信息通常需要查阅服务商文档，或通过实际请求确认。
 
